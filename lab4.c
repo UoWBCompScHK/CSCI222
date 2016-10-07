@@ -4,6 +4,9 @@
 #ifndef ERROR_OCCUR
 #define ERROR_OCCUR 1
 #endif // ERROR_OCCUR
+#ifndef DISK_MAX_POS
+#define DISK_MAX_POS 999
+#endif
 
 typedef struct displayArray{
     int *sequences;
@@ -39,8 +42,8 @@ void max_heapify(int arr[], size_t start, size_t end) {
     }
 }
 
-void sort(int *a, size_t len){
-    size_t i;
+void sort(int a[], size_t len){
+    long long i;
     for (i = len / 2 - 1; i >= 0; i--)
         max_heapify(a, i, len - 1);
     for (i = len - 1; i > 0; i--) {
@@ -54,33 +57,34 @@ display* scan_alg(int initPos, int *io, size_t size){
     for(size_t i=0;i!=size;++i){
         ioRequests[i]=io[i];
     }
-    printf("Scan running\n");
     sort(ioRequests, size);
-    printf("Scan running 1\n");
     size_t indexOfInitPos = find_in_array(ioRequests, size, initPos);
-    printf("Scan running 2\n");
     if(ioRequests[indexOfInitPos]!=initPos){
         exit(1);
     }
     int j = 1;
-    size_t endAt = size;
+    long long endAt = size;
     if(size-indexOfInitPos>indexOfInitPos){
         j = -1;
-        endAt = j;
+        endAt = -1;
     }
     display *output = (display*)malloc(sizeof(display));
-    output->sequences = (int*)malloc(sizeof(ioRequests));
+    output->sequences = (int*)malloc(sizeof(int)*size);
     output->totalMovement = 0;
     int pre = 0;
-    for(size_t i=0;i!=endAt;i+=j){
+    size_t k = 0;
+    for(long long i=indexOfInitPos;i!=endAt;i+=j){
         if(i == size){
             i = indexOfInitPos-1;
             j = -1;
+            pre = DISK_MAX_POS;
         } else if(i == -1){
             i = indexOfInitPos+1;
             j = 1;
+            pre = 0;
         }
-        output->sequences[i] = ioRequests[i];
+        output->sequences[k] = ioRequests[i];
+        ++k;
         output->totalMovement += abs(ioRequests[i] - pre);
         pre = ioRequests[i];
     }
@@ -102,16 +106,19 @@ display* c_scan_alg(int initPos, int *io, size_t size){
         j = -1;
     }
     display *output = (display*)malloc(sizeof(display));
-    output->sequences = (int*)malloc(sizeof(ioRequests));
+    output->sequences = (int*)malloc(sizeof(int)*size);
     output->totalMovement = 0;
     int pre = 0;
-    for(size_t i=0;i!=size&&i!=-1&&i!=indexOfInitPos;){
-        output->sequences[i] = ioRequests[i];
+    size_t k = 0;
+    for(long long i=indexOfInitPos;i!=size&&i!=-1&&i!=indexOfInitPos;){
+        output->sequences[k] = ioRequests[i];
+        ++k;
         output->totalMovement += abs(ioRequests[i] - pre);
         pre = ioRequests[i];
         i+=j;
         if(i == size){
             i = 0;
+            pre = 0;
         } else if(i == -1){
             i = size;
         }
@@ -134,16 +141,19 @@ display* c_look_alg(int initPos, int *io, size_t size){
         j = -1;
     }
     display *output = (display*)malloc(sizeof(display));
-    output->sequences = (int*)malloc(sizeof(ioRequests));
+    output->sequences = (int*)malloc(sizeof(int)*size);
     output->totalMovement = 0;
     int pre = 0;
-    for(size_t i=0;i!=size&&i!=-1&&i!=indexOfInitPos;){
-        output->sequences[i] = ioRequests[i];
+    size_t k = 0;
+    for(long long i=indexOfInitPos;i!=size&&i!=-1&&i!=indexOfInitPos;){
+        output->sequences[k] = ioRequests[i];
+        ++k;
         output->totalMovement += abs(ioRequests[i] - pre);
         pre = ioRequests[i];
         i+=j;
         if(i == size-1){
             i = 0;
+            pre = 0;
         } else if(i == 0){
             i = size-1;
         }
@@ -169,11 +179,11 @@ int main()
     }
     if(i!=-1){
         return 1;
+    }else if(j!=k){
+        ioNum = j;
     }
     printf(". . .\n\n");
     display *elevator = scan_alg(cPos, requests, ioNum);
-    printf(". . .\n\n");
-    return 0;
     display *circularScan = c_scan_alg(cPos, requests, ioNum);
     display *c_look = c_look_alg(cPos, requests, ioNum);
     printf("SCAN\n\n\t");
@@ -191,8 +201,9 @@ int main()
                 printf("\t");
             }
         }
-        printf("\nTotal movements: %d\n\n", elevator->totalMovement);
+        printf("\n");
     }
+    printf("Total movements: %d\n\n", elevator->totalMovement);
     printf("C-SCAN\n\n\t");
     for(int i=0;i!=ioNum;++i){
         printf("%d\t", requests[i]);
@@ -208,8 +219,9 @@ int main()
                 printf("\t");
             }
         }
-        printf("\nTotal movements: %d\n\n", circularScan->totalMovement);
+        printf("\n");
     }
+    printf("Total movements: %d\n\n", circularScan->totalMovement);
     printf("C-LOOK\n\n\t");
     for(int i=0;i!=ioNum;++i){
         printf("%d\t", requests[i]);
@@ -225,8 +237,9 @@ int main()
                 printf("\t");
             }
         }
-        printf("\nTotal movements: %d\n\n", c_look->totalMovement);
+        printf("\n");
     }
+    printf("Total movements: %d\n\n", c_look->totalMovement);
     free(requests);
     free(elevator->sequences);
     free(circularScan->sequences);
