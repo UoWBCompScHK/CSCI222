@@ -63,10 +63,10 @@ display* scan_alg(int initPos, int *io, size_t size){
         exit(1);
     }
     int j = 1;
-    long long endAt = size;
+    long long endAt = -1;
     if(size-indexOfInitPos>indexOfInitPos){
         j = -1;
-        endAt = -1;
+        endAt = size;
     }
     display *output = (display*)malloc(sizeof(display));
     output->sequences = (int*)malloc(sizeof(int)*size);
@@ -77,10 +77,12 @@ display* scan_alg(int initPos, int *io, size_t size){
         if(i == size){
             i = indexOfInitPos-1;
             j = -1;
+            output->totalMovement += DISK_MAX_POS - pre;
             pre = DISK_MAX_POS;
         } else if(i == -1){
             i = indexOfInitPos+1;
             j = 1;
+            output->totalMovement += pre;
             pre = 0;
         }
         output->sequences[k] = ioRequests[i];
@@ -88,6 +90,10 @@ display* scan_alg(int initPos, int *io, size_t size){
         output->totalMovement += abs(ioRequests[i] - pre);
         pre = ioRequests[i];
     }
+    for(size_t i=0;i!=size;++i){
+        printf("%d\t",output->sequences[i]);
+    }
+    printf("\n\n");
     return output;
 }
 
